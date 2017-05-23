@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "politeness_data <- read_csv(\"~/Desktop/Air Work/Chester R workshop/Day Two/Morning Session/politeness_data.csv\", col_types = cols(attitude = col_factor(levels = c(\"pol\", \"inf\"))))\n\nmodel <- lmer (frequency ~ attitude + gender + (1+attitude|subject) + (1+attitude|scenario), data=politeness_data)\nmodel1 <- lmer (frequency ~ attitude + gender + (1+attitude|subject) , data=politeness_data)\nanova (model, model1)\n\nsummary (model)\n\n#This is for Subject coefficients\nmodelcoef <- coef (model)$subject\n\ncond1 <- as.data.frame(modelcoef$`(Intercept)`)\ncond2 <- as.data.frame((modelcoef$`(Intercept)`)+ (modelcoef$attitudeinf))\ncolnames(cond1) <- \"Freq\"\ncolnames(cond2) <- \"Freq\"\ncond <- rbind (cond1, cond2)\n\nsubject <- as.data.frame(seq (1:6))\nsubject <-  (rbind (subject,subject))\n\nconditionlab1 <- as.data.frame(seq (from=1, to=1, length.out=6))\nconditionlab2 <- as.data.frame(seq (from=2, to=2, length.out=6))\ncolnames(conditionlab1) <- \"Condition\"\ncolnames(conditionlab2) <- \"Condition\"\ncondlab <- as.data.frame(rbind(conditionlab1, conditionlab2))\n\ncond <- cbind (subject,cond, condlab)\ncolnames (cond) <- c(\"Subject\", \"Freq\", \"Condition\")\n\ncond$Condition <- as.factor (cond$Condition)\nplot <- ggplot (cond, aes (Condition, Freq, group=Subject)) + geom_line() + geom_point() + labs (x=\"Condition \\n 1 = Polite \\n 2= Informal\",y = \"Frequency (Hz)\", title=\"Individual subject coefficients\")\nplot\n\n#This is for Scenario coefficients\nmodelcoef <- coef (model)$scenario\n\ncond1 <- as.data.frame(modelcoef$`(Intercept)`)\ncond2 <- as.data.frame((modelcoef$`(Intercept)`)+ (modelcoef$attitudeinf))\ncolnames(cond1) <- \"Freq\"\ncolnames(cond2) <- \"Freq\"\ncond <- rbind (cond1, cond2)\n\nsubject <- as.data.frame(seq (1:7))\nsubject <-  (rbind (subject,subject))\n\nconditionlab1 <- as.data.frame(seq (from=1, to=1, length.out=7))\nconditionlab2 <- as.data.frame(seq (from=2, to=2, length.out=7))\ncolnames(conditionlab1) <- \"Condition\"\ncolnames(conditionlab2) <- \"Condition\"\ncondlab <- as.data.frame(rbind(conditionlab1, conditionlab2))\n\ncond <- cbind (subject,cond, condlab)\ncolnames (cond) <- c(\"Scenario\", \"Freq\", \"Condition\")\n\ncond$Condition <- as.factor (cond$Condition)\nggplot (cond, aes (Condition, Freq, group=Scenario)) + geom_line() + geom_point() + labs (x=\"Condition \\n 1 = Polite \\n 2= Informal\",y = \"Frequency (Hz)\", title=\"Individual scenario coefficients\")\n\n#attemping to change x-axis limits\nplot <- ggplot (cond, aes (Condition, Freq, group=Scenario,xmin=1)) + geom_line() + geom_point() + labs (x=\"Condition \\n 1 = Polite \\n 2= Informal\",y = \"Frequency (Hz)\", title=\"Individual scenario coefficients\")\nplot + geom_abline (intercept=238, slope=19.8, colour=\"red\")\n\nplot + scale_x_discrete(expand = c(0,0))",
+    "created" : 1495546282527.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "882806422",
+    "id" : "30438255",
+    "lastKnownWriteTime" : 1493389258,
+    "last_content_update" : 1493389258,
+    "path" : "~/Desktop/Air Work/R analyses/plotting coefs.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
