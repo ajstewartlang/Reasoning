@@ -59,7 +59,7 @@ library (ggplot2)
 
 #Run the First Pass analysis
 #read in data file
-FP <- read_csv("~/Desktop/Air Work/R analyses/Henrik/FP.csv")
+FP <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/FP.csv")
 
 #MP and AC analysis - all reading times (even when people get the conclusion wrong)
 #select MP and AC conditions
@@ -127,7 +127,7 @@ lsmeans (model.MPACRIpr, pairwise ~ CondType, adjust="none", type="response")
 
 #Run the Regression Path analysis
 #read in data file
-RP <- read_csv("~/Desktop/Air Work/R analyses/Henrik/RP.csv")
+RP <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/RP.csv")
 
 #select MP and AC conditions
 index <- RP$CondType == "MP" | RP$CondType == "AC"
@@ -154,7 +154,7 @@ lsmeans (model.MPACRP, pairwise ~ CondType, adjust="none")
 
 #Run the Total Time analysis
 #read in the data file
-TT <- read_csv("~/Desktop/Air Work/R analyses/Henrik/TT.csv")
+TT <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/TT.csv")
 
 #select MP and AC conditions
 index <- TT$CondType == "MP" | TT$CondType == "AC"
@@ -184,118 +184,118 @@ lsmeans (model.MPACTT, pairwise ~ CondType, adjust="none")
 #MP and MPF analysis (all reading times even when people get the conclusion wrong)
 #Run the First Pass analysis
 #read in the data file
-FP <- read_csv("~/Desktop/Air Work/R analyses/Henrik/FP.csv")
+FP <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/FP.csv")
 
 #select MP and MPF conditions
 index <- FP$CondType == "MP" | FP$CondType == "MPF"
-MPACdataFP <- as.data.frame (FP[index,])
+MPMPFdataFP <- as.data.frame (FP[index,])
 
 #make CondType a factor
-MPACdataFP$CondType <- as.factor (MPACdataFP$CondType)
+MPMPFdataFP$CondType <- as.factor (MPMPFdataFP$CondType)
 
 #set up contrasts
-contrasts (MPACdataFP$CondType) <- matrix (c(.5, -.5)) 
+contrasts (MPMPFdataFP$CondType) <- matrix (c(.5, -.5)) 
 
 #Examine FP on the conditional consequent
-model.MPACFPpr <- lmer (Consequent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataFP, REML=TRUE)
-summary (model.MPACFPpr)
-lsmeans (model.MPACFPpr, pairwise ~ CondType, adjust="none")
+model.MPMPFFPpr <- lmer (Consequent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPMPFdataFP, REML=TRUE)
+summary (model.MPMPFFPpr)
+lsmeans (model.MPMPFFPpr, pairwise ~ CondType, adjust="none")
 
 #Don't examine minor premise times as text differs - remember to look at % regression in later
 
 #Examine FP on conclusion
-model.MPACFP <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataFP, REML=TRUE)
-summary (model.MPACFP)
+model.MPMPFFP <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPMPFdataFP, REML=TRUE)
+summary (model.MPMPFFP)
 
 #Run the Regressions out analyses
 RO <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/RO.csv")
 
 #select MP and MPF conditions
 index <- RO$CondType == "MP" | RO$CondType == "MPF"
-MPACdataRO <- as.data.frame (RO[index,])
+MPMPFdataRO <- as.data.frame (RO[index,])
 
 #make CondType a factor
-MPACdataRO$CondType <- as.factor (MPACdataRO$CondType)
+MPMPFdataRO$CondType <- as.factor (MPMPFdataRO$CondType)
 
 #set up contrasts
-contrasts (MPACdataRO$CondType) <- matrix (c(.5, -.5)) 
+contrasts (MPMPFdataRO$CondType) <- matrix (c(.5, -.5)) 
 
 #Examine RO on the conclusion
-model.MPACROpr <- glmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRO, family=binomial)
-summary (model.MPACROpr)
-lsmeans (model.MPACROpr, pairwise ~ CondType, adjust="none", type="response")
+model.MPMPFROpr <- glmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPMPFdataRO, family=binomial)
+summary (model.MPMPFROpr)
+lsmeans (model.MPMPFROpr, pairwise ~ CondType, adjust="none", type="response")
 
 #Run the Regression in analysis
 RI <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/RI.csv")
 
 #select MP and MPF conditions
 index <- RI$CondType == "MP" | RI$CondType == "MPF"
-MPACdataRI <- as.data.frame (RI[index,])
+MPMPFdataRI <- as.data.frame (RI[index,])
 
 #make CondType a factor
-MPACdataRI$CondType <- as.factor (MPACdataRI$CondType)
+MPMPFdataRI$CondType <- as.factor (MPMPFdataRI$CondType)
 
 #set up contrasts
-contrasts (MPACdataRI$CondType) <- matrix (c(.5, -.5)) 
+contrasts (MPMPFdataRI$CondType) <- matrix (c(.5, -.5)) 
 
 #Examine RI on the antecedent
-model.MPACRIpr <- glmer (Antecedent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRI, family=binomial)
-summary (model.MPACRIpr)
-lsmeans (model.MPACRIpr, pairwise ~ CondType, adjust="none", type="response")
+model.MPMPFRIpr <- glmer (Antecedent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPMPFdataRI, family=binomial)
+summary (model.MPMPFRIpr)
+lsmeans (model.MPMPFRIpr, pairwise ~ CondType, adjust="none", type="response")
 
 #Examine RI on the premise
-model.MPACRIpr <- glmer (Premise ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRI, family=binomial)
-summary (model.MPACRIpr)
-lsmeans (model.MPACRIpr, pairwise ~ CondType, adjust="none", type="response")
+model.MPMPFRIpr <- glmer (Premise ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPMPFdataRI, family=binomial)
+summary (model.MPMPFRIpr)
+lsmeans (model.MPMPFRIpr, pairwise ~ CondType, adjust="none", type="response")
 
 #Run the Regression Path analysis
 #read in the data file
-RP <- read_csv("~/Desktop/Air Work/R analyses/Henrik/RP.csv")
+RP <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/RP.csv")
 
 #select MP and MPF conditions
 index <- RP$CondType == "MP" | RP$CondType == "MPF"
-MPACdataRP <- as.data.frame (RP[index,])
+MPMPFdataRP <- as.data.frame (RP[index,])
 
 #make CondType a factor
-MPACdataRP$CondType <- as.factor (MPACdataRP$CondType)
+MPMPFdataRP$CondType <- as.factor (MPMPFdataRP$CondType)
 
 #set up contrasts
-contrasts (MPACdataRP$CondType) <- matrix (c(.5, -.5)) 
+contrasts (MPMPFdataRP$CondType) <- matrix (c(.5, -.5)) 
 
 #Examine RP on the conditional consequent
-model.MPACRPpr <- lmer (Consequent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRP, REML=TRUE)
-summary (model.MPACRPpr)
-lsmeans (model.MPACRPpr, pairwise ~ CondType, adjust="none")
+model.MPMPFRPpr <- lmer (Consequent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPMPFdataRP, REML=TRUE)
+summary (model.MPMPFRPpr)
+lsmeans (model.MPMPFRPpr, pairwise ~ CondType, adjust="none")
 
 #Don't examine minor premise times as text differs - remember to look at % regression in later
 
 #Examine RP on conclusion
-model.MPACRP <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRP, REML=TRUE)
-summary (model.MPACRP)
+model.MPMPFRP <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPMPFdataRP, REML=TRUE)
+summary (model.MPMPFRP)
 
 
 #Run the Total Time analysis
 #read in the data file
-TT <- read_csv("~/Desktop/Air Work/R analyses/Henrik/TT.csv")
+TT <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/TT.csv")
 
 #select MP and MPF conditions
 index <- TT$CondType == "MP" | TT$CondType == "MPF"
-MPACdataTT <- as.data.frame (TT[index,])
+MPMPFdataTT <- as.data.frame (TT[index,])
 
 #make CondType a factor
-MPACdataTT$CondType <- as.factor (MPACdataTT$CondType)
+MPMPFdataTT$CondType <- as.factor (MPMPFdataTT$CondType)
 
 #set up contrasts
-contrasts (MPACdataTT$CondType) <- matrix (c(.5, -.5)) 
+contrasts (MPMPFdataTT$CondType) <- matrix (c(.5, -.5)) 
 
 #Examine TT on the conditional consequent
-model.MPACTTpr <- lmer (Consequent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataTT, REML=TRUE)
-summary (model.MPACTTpr)
-lsmeans (model.MPACTTpr, pairwise ~ CondType, adjust="none")
+model.MPMPFTTpr <- lmer (Consequent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPMPFdataTT, REML=TRUE)
+summary (model.MPMPFTTpr)
+lsmeans (model.MPMPFTTpr, pairwise ~ CondType, adjust="none")
 
 #Don't examine minor premise times as text differs - remember to look at % regression in later
 
 #Examine TT on conclusion
-model.MPACTT <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataTT, REML=TRUE)
-summary (model.MPACTT)
+model.MPMPFTT <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPMPFdataTT, REML=TRUE)
+summary (model.MPMPFTT)
 
