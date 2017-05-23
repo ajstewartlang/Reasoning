@@ -53,6 +53,8 @@ library (ggplot2)
 
 #FP = First Pass - the sum of all fixations within a region before the eye exits to the left or to the right
 #RP = Regressions Path - the sum of all fixations within a region (incl. re-reading of previous regions) before the eye exits to the right
+#RO = Regressions out of a region as a binary variable (1=regression out, 0=no regression out)
+#RI = Regressions in to a region as a binary variable (1=regression in, 0=no regression in)
 #TT = Total Time - the sum of all fixations within a region
 
 #Run the First Pass analysis
@@ -81,7 +83,47 @@ lsmeans (model.MPACFPpr, pairwise ~ CondType, adjust="none")
 model.MPACFP <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataFP, REML=TRUE)
 summary (model.MPACFP)
 
+#Run the Regressions out analyses
+RO <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/RO.csv")
 
+#select MP and MPF conditions
+index <- RO$CondType == "MP" | RO$CondType == "AC"
+MPACdataRO <- as.data.frame (RO[index,])
+
+#make CondType a factor
+MPACdataRO$CondType <- as.factor (MPACdataRO$CondType)
+
+#set up contrasts
+contrasts (MPACdataRO$CondType) <- matrix (c(.5, -.5)) 
+
+#Examine RO on the conclusion
+model.MPACROpr <- glmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRO, family=binomial)
+summary (model.MPACROpr)
+lsmeans (model.MPACROpr, pairwise ~ CondType, adjust="none", type="response")
+
+
+#Run the Regression in analysis
+RI <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/RI.csv")
+
+#select MP and AC conditions
+index <- RI$CondType == "MP" | RI$CondType == "AC"
+MPACdataRI <- as.data.frame (RI[index,])
+
+#make CondType a factor
+MPACdataRI$CondType <- as.factor (MPACdataRI$CondType)
+
+#set up contrasts
+contrasts (MPACdataRI$CondType) <- matrix (c(.5, -.5)) 
+
+#Examine RI on the antecedent
+model.MPACRIpr <- glmer (Antecedent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRI, family=binomial)
+summary (model.MPACRIpr)
+lsmeans (model.MPACRIpr, pairwise ~ CondType, adjust="none", type="response")
+
+#Examine RI on the minor premise
+model.MPACRIpr <- glmer (Premise ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRI, family=binomial)
+summary (model.MPACRIpr)
+lsmeans (model.MPACRIpr, pairwise ~ CondType, adjust="none", type="response")
 
 #Run the Regression Path analysis
 #read in data file
@@ -165,6 +207,46 @@ lsmeans (model.MPACFPpr, pairwise ~ CondType, adjust="none")
 model.MPACFP <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataFP, REML=TRUE)
 summary (model.MPACFP)
 
+#Run the Regressions out analyses
+RO <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/RO.csv")
+
+#select MP and MPF conditions
+index <- RO$CondType == "MP" | RO$CondType == "MPF"
+MPACdataRO <- as.data.frame (RO[index,])
+
+#make CondType a factor
+MPACdataRO$CondType <- as.factor (MPACdataRO$CondType)
+
+#set up contrasts
+contrasts (MPACdataRO$CondType) <- matrix (c(.5, -.5)) 
+
+#Examine RO on the conclusion
+model.MPACROpr <- glmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRO, family=binomial)
+summary (model.MPACROpr)
+lsmeans (model.MPACROpr, pairwise ~ CondType, adjust="none", type="response")
+
+#Run the Regression in analysis
+RI <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/RI.csv")
+
+#select MP and MPF conditions
+index <- RI$CondType == "MP" | RI$CondType == "MPF"
+MPACdataRI <- as.data.frame (RI[index,])
+
+#make CondType a factor
+MPACdataRI$CondType <- as.factor (MPACdataRI$CondType)
+
+#set up contrasts
+contrasts (MPACdataRI$CondType) <- matrix (c(.5, -.5)) 
+
+#Examine RI on the antecedent
+model.MPACRIpr <- glmer (Antecedent ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRI, family=binomial)
+summary (model.MPACRIpr)
+lsmeans (model.MPACRIpr, pairwise ~ CondType, adjust="none", type="response")
+
+#Examine RI on the premise
+model.MPACRIpr <- glmer (Premise ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataRI, family=binomial)
+summary (model.MPACRIpr)
+lsmeans (model.MPACRIpr, pairwise ~ CondType, adjust="none", type="response")
 
 #Run the Regression Path analysis
 #read in the data file
@@ -192,8 +274,6 @@ model.MPACRP <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Ite
 summary (model.MPACRP)
 
 
-
-
 #Run the Total Time analysis
 #read in the data file
 TT <- read_csv("~/Desktop/Air Work/R analyses/Henrik/TT.csv")
@@ -218,3 +298,4 @@ lsmeans (model.MPACTTpr, pairwise ~ CondType, adjust="none")
 #Examine TT on conclusion
 model.MPACTT <- lmer (Conclusion ~ CondType + (1+CondType|P.s) + (1+CondType|Item), data=MPACdataTT, REML=TRUE)
 summary (model.MPACTT)
+
