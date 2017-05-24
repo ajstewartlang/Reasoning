@@ -3,6 +3,11 @@ library(afex)
 lsm.options(lmer.df = "asymptotic")
 library (readr)
 library (ggplot2)
+require(latticeExtra)
+lattice.options(default.theme = standard.theme(color = FALSE))
+lattice.options(default.args = list(as.table = TRUE))
+require(dplyr)
+require(tidyr)
 
 #in total there are 8 conditions
 #the second sentence is identical for the first 4 versions, and for the last 4 versions
@@ -85,6 +90,21 @@ d_fp <- read_csv("FP.csv")
 d_fp <- add_conditions(d_fp)
 attr(d_fp, "spec") <- NULL
 str(d_fp)
+
+d_fp_a <- d_fp %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(CondType, dv) %>% 
+  summarise(mean_fp = mean(rt, na.rm = TRUE))
+
+d_fp_a2 <- d_fp %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(inference, polarity_premise, dv) %>% 
+  summarise(mean_fp = mean(rt, na.rm = TRUE))
+
+
+xyplot(mean_fp ~ CondType|dv, d_fp_a, type = "o")
+
+xyplot(mean_fp ~ inference|dv, d_fp_a2, group = polarity_premise, type = "o", auto.key = list(lines=TRUE))
 
 
 mfp_conclusion_1 <- mixed(Conclusion ~ inference*polarity_premise + (inference*polarity_premise|P.s), data=d_fp, control = lmerControl(optCtrl = list(maxfun=1e6))) 

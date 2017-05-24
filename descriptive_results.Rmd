@@ -1,0 +1,214 @@
+---
+title: "Descriptive Results"
+output: html_notebook
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Items:
+
+-` MP`  
+  If there is a black square then there is a yellow circle.  
+  There is a black square.  
+  Conclusion: There is a yellow circle.  
+- `AC`  
+  If there is a yellow circle then there is a black square.  
+  There is a black square.  
+  Conclusion: There is a yellow circle.  
+- `MPF`  
+  If there is a black square then there is a yellow circle.  
+  There is NOT a black square.  
+  Conclusion: There is a yellow circle.  
+- `ACF`  
+  If there is a yellow circle then there is a black square.  
+  There is NOT a black square.  
+  Conclusion: There is a yellow circle.  
+- `CB`  
+  There is a black square and there is a yellow circle. / There is a yellow circle and there is a black square.  
+  There is a black square.  
+  Conclusion: There is a yellow circle.  
+- `DB`  
+  There is a black square or there is a yellow circle. / There is a yellow circle or there is a black square.  
+  There is a black square.  
+  Conclusion: There is a yellow circle.  
+- `CF`  
+  There is a black square and there is a yellow circle. / There is a yellow circle and there is a black square.  
+  There is NOT a black square.  
+  Conclusion: There is a yellow circle.  
+- `DF`  
+  There is a black square or there is a yellow circle. / There is a yellow circle or there is a black square.  
+  There is NOT a black square.  
+  Conclusion: There is a yellow circle.
+
+
+```{r, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+#load the appropriate packages
+library(afex)
+lsm.options(lmer.df = "asymptotic")
+library (readr)
+library (ggplot2)
+require(latticeExtra)
+lattice.options(default.theme = standard.theme(color = FALSE))
+lattice.options(default.args = list(as.table = TRUE))
+require(dplyr)
+require(tidyr)
+
+add_conditions <- function(data) {
+  data$CondType <- factor(data$CondType, levels = c("MP", "AC", "MPF", "ACF", "CB", "DB", "CF", "DF"))
+  data$inference <- car::recode(data$CondType, 
+                                "c('MP', 'MPF')='MP';
+                                 c('AC', 'ACF')='AC';
+                                 c('CB', 'CF')='conj';
+                                 c('DB', 'DF')='disj'", 
+                                levels = c("MP", "AC", "conj", "disj"))
+  data$polarity_premise <- car::recode(data$CondType, 
+                                       "c('MP', 'AC', 'CB', 'DB')='positive'; 
+                                        c('MPF', 'ACF', 'CF', 'DF')='negative'", 
+                                       levels = c("positive", "negative"))
+  data$validity <- factor(ifelse(data$CondType %in% c("MP", "CB", "DF"), "valid", 
+                                 ifelse(data$CondType %in% c("AC", "ACF", "DB", "CF"), "possible", 
+                                        "impossible")), 
+                          levels = c("valid", "possible", "impossible"))
+  data$quasi_validity <- car::recode(data$CondType, 
+                                      "c('MP', 'AC', 'CB', 'DF')='quasi_valid'; 
+                                      c('MPF', 'ACF', 'CF', 'DB')='quasi_invalid'", 
+                                      levels = c("quasi_valid", "quasi_invalid"))
+  data$major_premise <- factor(ifelse(data$CondType %in% c("MP", "AC", "MPF", "ACF"), "conditional", "conjunction-disjunction"), levels = c( "conditional", "conjunction-disjunction"))
+  data
+}
+
+```
+
+
+# First Pass
+
+```{r, results='hide'}
+d_fp <- read_csv("FP.csv")
+d_fp <- add_conditions(d_fp)
+attr(d_fp, "spec") <- NULL
+str(d_fp)
+
+d_fp_a <- d_fp %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(CondType, dv) %>% 
+  summarise(mean_fp = mean(rt, na.rm = TRUE))
+
+d_fp_a2 <- d_fp %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(inference, polarity_premise, dv) %>% 
+  summarise(mean_fp = mean(rt, na.rm = TRUE))
+```
+
+
+Mean first pass RTs as a function of condition:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_fp ~ CondType|dv, d_fp_a, type = "o")
+```
+
+Mean first pass RTs as a function of `inference` and `polarity`:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_fp ~ inference|dv, d_fp_a2, group = polarity_premise, type = "o", auto.key = list(lines=TRUE))
+```
+
+
+# Total Time
+
+```{r, results='hide'}
+d_tt <- read_csv("TT.csv")
+d_tt <- add_conditions(d_tt)
+attr(d_tt, "spec") <- NULL
+str(d_tt)
+
+d_tt_a <- d_tt %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(CondType, dv) %>% 
+  summarise(mean_tt = mean(rt, na.rm = TRUE))
+
+d_tt_a2 <- d_tt %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(inference, polarity_premise, dv) %>% 
+  summarise(mean_tt = mean(rt, na.rm = TRUE))
+```
+
+
+Mean total RTs as a function of condition:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_tt ~ CondType|dv, d_tt_a, type = "o")
+```
+
+Mean total RTs as a function of `inference` and `polarity`:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_tt ~ inference|dv, d_tt_a2, group = polarity_premise, type = "o", auto.key = list(lines=TRUE))
+```
+
+
+# Regression (RI)
+
+```{r, results='hide'}
+d_ri <- read_csv("RI.csv")
+d_ri <- add_conditions(d_ri)
+attr(d_ri, "spec") <- NULL
+str(d_ri)
+
+d_ri_a <- d_ri %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(CondType, dv) %>% 
+  summarise(mean_ri = mean(rt, na.rm = TRUE))
+
+d_ri_a2 <- d_ri %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(inference, polarity_premise, dv) %>% 
+  summarise(mean_ri = mean(rt, na.rm = TRUE))
+```
+
+
+Mean rate of RI as a function of condition:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_ri ~ CondType|dv, d_ri_a, type = "o")
+```
+
+Mean rate of RI as a function of `inference` and `polarity`:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_ri ~ inference|dv, d_ri_a2, group = polarity_premise, type = "o", auto.key = list(lines=TRUE))
+```
+
+
+# Regression Path 
+
+```{r, results='hide'}
+d_rp <- read_csv("RP.csv")
+d_rp <- add_conditions(d_rp)
+attr(d_rp, "spec") <- NULL
+str(d_rp)
+
+d_rp_a <- d_rp %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(CondType, dv) %>% 
+  summarise(mean_rp = mean(rt, na.rm = TRUE))
+
+d_rp_a2 <- d_rp %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(inference, polarity_premise, dv) %>% 
+  summarise(mean_rp = mean(rt, na.rm = TRUE))
+```
+
+
+Mean RP as a function of condition:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_rp ~ CondType|dv, d_rp_a, type = "o")
+```
+
+Mean RP as a function of `inference` and `polarity`:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_rp ~ inference|dv, d_rp_a2, group = polarity_premise, type = "o", auto.key = list(lines=TRUE))
+```
+
+
