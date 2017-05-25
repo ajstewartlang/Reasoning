@@ -212,3 +212,37 @@ xyplot(mean_rp ~ inference|dv, d_rp_a2, group = polarity_premise, type = "o", au
 ```
 
 
+
+# Regression (RO)
+
+```{r, results='hide'}
+d_ro <- read_csv("RO.csv")
+d_ro <- add_conditions(d_ro)
+attr(d_ro, "spec") <- NULL
+str(d_ro)
+
+d_ro_a <- d_ro %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(CondType, dv) %>% 
+  summarise(mean_ro = mean(rt, na.rm = TRUE))
+
+d_ro_a2 <- d_ro %>% 
+  gather("dv", "rt", Antecedent:Conclusion) %>% 
+  group_by(inference, polarity_premise, dv) %>% 
+  summarise(mean_ro = mean(rt, na.rm = TRUE))
+```
+
+
+Mean rate of RO as a function of condition:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_ro ~ CondType|dv, d_ro_a, type = "o")
+```
+
+Mean rate of RO as a function of `inference` and `polarity`:
+
+```{r, fig.width=10, fig.height=4}
+xyplot(mean_ro ~ inference|dv, d_ro_a2, group = polarity_premise, type = "o", auto.key = list(lines=TRUE))
+```
+
+
