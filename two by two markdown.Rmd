@@ -1,0 +1,180 @@
+---
+title: "Reasoning_initial analysis"
+author: "Andrew Stewart"
+date: "5/26/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Initial analysis regardless of endorsement. Total of 40 participants.
+This is a 2 x 2 LMM with factors Validity (Valid vs Invalid) and Major Premise (Conditional vs Non-conditional).
+
+```{r echo=FALSE}
+library (readr)
+library (ggplot2)
+library (lme4)
+library (lmerTest)
+library (lsmeans) 
+library (pbkrtest)
+library (latticeExtra)
+library(dplyr)
+library(tidyr)
+```
+
+Create a modified verion of the add_conditions function.
+
+```{r}
+add_conditions <- function(data) {
+  data$CondType <- factor(data$CondType, levels = c("MP", "AC", "MPF", "ACF", "CB", "DB", "CF", "DF"))
+  data$inference <- car::recode(data$CondType, 
+                                "c('MP', 'MPF')='MP';
+                                c('AC', 'ACF')='AC';
+                                c('CB', 'CF')='conj';
+                                c('DB', 'DF')='disj'", 
+                                levels = c("MP", "AC", "conj", "disj"))
+  data$polarity_premise <- car::recode(data$CondType, 
+                                       "c('MP', 'AC', 'CB', 'DB')='positive'; 
+                                       c('MPF', 'ACF', 'CF', 'DF')='negative'", 
+                                       levels = c("positive", "negative"))
+  data$validity <- factor(ifelse(data$CondType %in% c("MP", "CB", "DF"), "valid", 
+                                 ifelse(data$CondType %in% c("AC", "ACF", "DB", "CF"), "possible", 
+                                        "impossible")), 
+                          levels = c("valid", "possible", "impossible"))
+  data$quasi_validity <- car::recode(data$CondType, 
+                                     "c('MP',  'CB', 'DF')='quasi_valid'; 
+                                     c('MPF', 'AC', 'CF', 'DB')='quasi_invalid'", 
+                                     levels = c("quasi_valid", "quasi_invalid"))
+  data$major_premise <- factor(ifelse(data$CondType %in% c("MP", "AC", "MPF", "ACF"), "conditional", "conjunction-disjunction"), levels = c( "conditional", "conjunction-disjunction"))
+  data
+}
+```
+
+Run the first pass analysis.  First some data wrangling and setting up the contrasts.
+
+```{r results="hide"}
+d_fp <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/FP.csv")
+d_fp <- add_conditions(d_fp)
+attr(d_fp, "spec") <- NULL
+str(d_fp)
+
+index <- d_fp$CondType == "MP" | d_fp$CondType == "AC" | d_fp$CondType == "CB"| d_fp$CondType == "DB"
+d_fp <- d_fp[index,]
+
+d_fp$P.s <- as.factor (d_fp$P.s)
+d_fp$Item <- as.factor (d_fp$Item)
+
+contrasts (d_fp$quasi_validity) <- matrix (c(.5, -.5)) 
+contrasts (d_fp$major_premise) <- matrix (c(.5, -.5)) 
+```
+
+Plot the means for each of the 4 conditions.
+
+```{r}
+d_fp_a <- d_fp %>% 
+  gather("dv", "rt", Premise:Conclusion) %>% 
+  group_by(CondType, dv) %>% 
+  summarise(mean_fp = mean(rt, na.rm = TRUE))
+
+xyplot(mean_fp ~ CondType|dv, d_fp_a, type = "o")
+```
+
+There is a marginal effect of validity (p = .076) on first pass times to the minor premise with slower reading time in invalid than in valid conditions , but nothing on first pass times to the conclusion.
+
+```{r}
+#build the LMM for first pass times on the minor premise
+modelfp_premise <- lmer (Premise ~ quasi_validity*major_premise + (1 + quasi_validity*major_premise| P.s)  + (1 + quasi_validity*major_premise| Item), data = d_fp, REML=TRUE)
+summary (modelfp_premise)
+
+#build the LMM for first pass times on the conclusion
+modelfp_concl <- lmer (Conclusion ~ quasi_validity*major_premise + (1 + quasi_validity*major_premise| P.s)  + (1 + quasi_validity*major_premise| Item), data = d_fp, REML=TRUE)
+summary (modelfp_concl)
+
+```
+
+Run the regression path analysis. First some data wrangling and setting up the contrasts.
+
+```{r results="hide"}
+d_rp <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/RP.csv")
+d_rp <- add_conditions(d_rp)
+attr(d_rp, "spec") <- NULL
+str(d_rp)
+
+index <- d_rp$CondType == "MP" | d_rp$CondType == "AC" | d_rp$CondType == "CB"| d_rp$CondType == "DB"
+d_rp <- d_rp[index,]
+
+d_rp$P.s <- as.factor (d_rp$P.s)
+d_rp$Item <- as.factor (d_rp$Item)
+
+contrasts (d_rp$quasi_validity) <- matrix (c(.5, -.5)) 
+contrasts (d_rp$major_premise) <- matrix (c(.5, -.5)) 
+
+```
+
+Plot the means for each of the 4 conditions.
+
+```{r}
+d_rp_a <- d_rp %>% 
+  gather("dv", "rt", Premise:Conclusion) %>% 
+  group_by(CondType, dv) %>% 
+  summarise(mean_rp = mean(rt, na.rm = TRUE))
+
+xyplot(mean_rp ~ CondType|dv, d_rp_a, type = "o")
+```
+
+There is an effect on regression path times to the minor premise where it is read more slowly following a conditional than following a (con/dis)junction. There is an effect on regression path time to the conclusion where it is read more slowly in invalid than in valid conditions.
+
+```{r}
+#build the LMM for regression path times on the minor premise
+modelrp_premise <- lmer (Premise ~ quasi_validity*major_premise + (1 + quasi_validity*major_premise| P.s)  + (1 + quasi_validity*major_premise| Item), data = d_rp, REML=TRUE)
+summary (modelrp_premise)
+
+#build the LMM for regression path times on the conclusion
+modelrp_concl <- lmer (Conclusion ~ quasi_validity*major_premise + (1 + quasi_validity*major_premise| P.s)  + (1 + quasi_validity*major_premise| Item), data = d_rp, REML=TRUE)
+summary (modelrp_concl)
+```
+
+Run the total time analysis. First some data wrangling and setting up the contrasts.
+
+```{r results="hide"}
+d_tt <- read_csv("~/Desktop/Air Work/R analyses/Reasoning/TT.csv")
+d_tt <- add_conditions(d_tt)
+attr(d_tt, "spec") <- NULL
+str(d_tt)
+
+index <- d_tt$CondType == "MP" | d_tt$CondType == "AC" | d_tt$CondType == "CB"| d_tt$CondType == "DB"
+d_tt <- d_tt[index,]
+
+d_tt$P.s <- as.factor (d_tt$P.s)
+d_tt$Item <- as.factor (d_tt$Item)
+
+contrasts (d_tt$quasi_validity) <- matrix (c(.5, -.5)) 
+contrasts (d_tt$major_premise) <- matrix (c(.5, -.5)) 
+```
+
+Plot the means for each of the 4 conditions.
+
+```{r}
+d_tt_a <- d_tt %>% 
+  gather("dv", "rt", Premise:Conclusion) %>% 
+  group_by(CondType, dv) %>% 
+  summarise(mean_tt = mean(rt, na.rm = TRUE))
+
+xyplot(mean_tt ~ CondType|dv, d_tt_a, type = "o")
+```
+
+There is an effect on total times to the minor premise where it is read more slowly in invalid than in valid conditions. Nothing on the conclusion.
+
+```{r}
+#build the LMM for total times on the minor premise - note, item random effects need to be simplified for the model to converge
+modeltt_premise <- lmer (Premise ~ quasi_validity*major_premise + (1 + quasi_validity*major_premise| P.s)  + (1 + quasi_validity+major_premise| Item), data = d_tt, REML=TRUE)
+summary (modeltt_premise)
+
+#build the LMM for total  times on the conclusion
+modeltt_concl <- lmer (Conclusion ~ quasi_validity*major_premise + (1 + quasi_validity*major_premise| P.s)  + (1 + quasi_validity*major_premise| Item), data = d_tt, REML=TRUE)
+summary (modeltt_concl)
+```
+
+
